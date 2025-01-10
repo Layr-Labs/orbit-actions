@@ -20,7 +20,6 @@ contract ExecuteNitroContractsEigenDA2Point1Point0UpgradeScript is Script {
     function run() public {
         // used to check if upgrade was successful
         bytes32 wasmModuleRoot = vm.envBytes32("TARGET_WASM_MODULE_ROOT");
-        address zeroAdress = address(0);
 
         NitroContractsEigenDA2Point1Point0UpgradeAction upgradeAction =
             NitroContractsEigenDA2Point1Point0UpgradeAction(vm.envAddress("UPGRADE_ACTION_ADDRESS"));

@@ -1,0 +1,65 @@
+title: "layr-labs/orbit-actions"  # Define the HTML page title
+logo: "logo.png"
+footer: |  # define the footer with markdown
+  [orbit-sdk](https://github.com/Layr-Labs/orbit-actions) fork overview &middot created with [Forkdiff](https://github.com/protolambda/forkdiff)
+base:
+  name: OffchainLabs/orbit-actions
+  url: https://github.com/OffchainLabs/orbit-actions
+  hash: 9e3c1c344cd762e04316fae426bf42da251c45e2
+fork:
+  name: Layr-Labs/orbit-actions
+  url: https://github.com/Layr-Labs/orbit-actions
+  ref: refs/heads/main
+def:
+    title: "Orbit Actions Fork Overview"
+    description: | # description in markdown
+      The original orbit-actions codebase can be found at [`github.com/OffchainLabs/orbit-actions`](https://github.com/OffchainLabs/orbit-actions).
+      And the fork at [`github.com/Layr-Labs/orbit-actions`](https://github.com/Layr-Labs/orbit-actions).
+
+    sub:
+      - title: "eigenda x nitro-contracts support"
+        globs:
+          - package.json
+          - foundry.toml
+
+
+      - title: "eigenda x nitro-contracts v2.1.0 migration action"
+        description: |
+          Built an action to allow for migrating existing Nitro contracts deployed using v2.1.0 to using ones with EigenDA changes.
+          This allows anyone running a vanilla Arbitrum chain to migrate it to use EigenDA.
+        globs:
+          - scripts/foundry/contract-upgrades/eigenda-2.1.0/README.md
+          - scripts/foundry/contract-upgrades/eigenda-2.1.0/.env.sample
+
+        sub:
+          - title: "Upgrade Action Contract"
+            
+            globs:
+              - contracts/parent-chain/contract-upgrades/NitroContractsEigenDA2Point1Point0UpgradeAction.sol
+
+          - title: "Deploy Action Script"
+            globs:
+              - scripts/foundry/contract-upgrades/eigenda-2.1.0/DeployNitroContractsEigenDA2Point1Point0UpgradeAction.s.sol
+
+          - title: "Execute Action Script"
+            globs:
+              - scripts/foundry/contract-upgrades/eigenda-2.1.0/ExecuteNitroContractsEigenDA2Point1Point0Upgrade.s.sol
+
+
+      #   globs:
+      #     - src/contracts/RollupCreator/v2.1.0.ts
+
+
+      # - title: "EigenDA namespace"
+      #   descrption: |
+      #     Added EigenDA namespace in-place of original Arbitrum namespace.
+        
+      #   globs:
+      #     - examples/**
+
+
+
+ignore:
+  - test/storage/**
+  - test/signatures/**
+  - yarn.lock
