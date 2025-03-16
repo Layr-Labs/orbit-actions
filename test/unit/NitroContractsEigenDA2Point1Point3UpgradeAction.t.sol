@@ -104,8 +104,12 @@ contract FakeArbitrum2Point1Point3Rollup {
 }
 
 contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, DeploymentHelpersScript {
+    // ArbOS x EigenDA v32 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32.1
+    bytes32 public constant WASM_MODULE_ROOT_EIGENDA_V32Point1 =
+        0x04a297cdd13254c4c6c26388915d416286daf22f3a20e3ebee10400a3129dd17;
     // ArbOS x EigenDA v32 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32
-    bytes32 public constant WASM_MODULE_ROOT = 0x951009942c00b5bd0abec233174fe33fadf7cd5013d17b042f9b28b3b00b469c;
+    bytes32 public constant WASM_MODULE_ROOT_EIGENDA_V32 =
+        0x951009942c00b5bd0abec233174fe33fadf7cd5013d17b042f9b28b3b00b469c;
     // ArbOS v32 https://github.com/OffchainLabs/nitro/releases/tag/consensus-v32
     bytes32 public constant COND_WASM_MODULE_ROOT = 0x184884e1eb9fefdc158f6c8ac912bb183bf3cf83f0090317e0bc4ac5860baa39;
 
@@ -268,7 +272,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
         );
 
         fakeRollup_2_1_0_EIGENDA = new FakeArbitrumEigenDA2Point1Point0Rollup(
-            IChallengeManager_2_1_0_EigenDA(challengeManager_2_1_0_EIGENDA), WASM_MODULE_ROOT
+            IChallengeManager_2_1_0_EigenDA(challengeManager_2_1_0_EIGENDA), WASM_MODULE_ROOT_EIGENDA_V32
         );
 
         // initialize everything
@@ -358,7 +362,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
             newErc20SeqInboxImpl,
             newChallengeManager,
             IOneStepProofEntry(newOneStepProver),
-            WASM_MODULE_ROOT,
+            WASM_MODULE_ROOT_EIGENDA_V32Point1,
             COND_WASM_MODULE_ROOT
         );
     }

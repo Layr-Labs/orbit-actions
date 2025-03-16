@@ -52,19 +52,19 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
      *      that this will only be callable until last pre-upgrade claim node has
      *      been confirmed on the assertion chain.
      *
-     *      caller context can be either:
-     *        - eigenda x nitro-contracts v2.1.0
-     *        - nitro-contracts v2.1.3
      *
-     *      since the nitro-contracts v2.1.0 --> v2.1.3 upgrade doesn't change the OSP
-     *      artifact then using the nitro-contracts x eigenda v2.1.0 OSP for both caller
-     *      contexts is sufficent. The conditional wasm module root doesn't have to be caller
-     *      context specific since consensus root V32 has not been updated since v2.1.0 upgrade.
+     *      since nitro-contracts x eigenda v2.1.0 references a vulnerable OSP artifact.
+     *      Using it for previous OSP resolution is insufficient and it's wavm root (consensus-eigenda-v32)
+     *      should map to the latest v2.1.3 one step prover.
      *
-     * @dev this approach assumes that only one condOsp will exist for backwards compatible
-     *      proving. THIS SHOULD NEVER be invoked by a chain with >1 module roots in an unconfirmed
-     *      assertion chain since the first module root woul be unresolvable given the OSP artifact
-     *      wouldn't exist post upgrade. E.g. doing a migration from other DA fork -> AnyTrust -> EigenDA
+     * @dev this approach assumes that only one osp will be used across a span of machine wavm references; ie:
+     *       - (consensus-32-eigenda) nitro-contracts x eigenda v2.1.0
+     *       - (consensus-32.1-eigenda) nitro-contracts x eigenda v2.1.3
+     *       - (consensus-32) nitro-contracts x arbitrum v2.1.3
+     *
+     *
+     *      this shouldn't cause any complications as consensus-32.1-eigenda is a superset of consensus-32 and
+     *      can support one step proof resolution for all vanilla arbitrum opcodes.
      */
 
     // based on caller context
@@ -115,7 +115,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
             "NitroContractsEigenDA2Point1Point3UpgradeAction: _newChallengeManagerImpl is not a contract"
         );
 
-        // set v2.1.3 upgrade action contracts
+        // set v2.1.3 vanilla upgrade action contracts
         newEthInboxImpl = _newEthInboxImpl;
         newERC20InboxImpl = _newERC20InboxImpl;
         newEthSequencerInboxImpl = _newEthSequencerInboxImpl;
@@ -141,7 +141,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
                 revert("NitroContractsEigenDA2Point1Point3UpgradeAction: INCORRECT_CALLER_SOURCE_EIGENDA");
             }
 
-            require(rollup.wasmModuleRoot() == newWasmModuleRoot, "EXPECTED_WASM_ROOT_EIGENDA_CONSENSUS_V32");
+            require(rollup.wasmModuleRoot() != newWasmModuleRoot, "EXPECTED_WASM_ROOT_EIGENDA_CONSENSUS_V32");
         } else {
             try IEigenV2Point1SeqInbox(sequencerInbox).eigenDARollupManager() returns (address) {}
             catch {

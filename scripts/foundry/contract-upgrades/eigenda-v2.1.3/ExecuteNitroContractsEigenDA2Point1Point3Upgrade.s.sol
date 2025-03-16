@@ -15,11 +15,11 @@ import {IUpgradeExecutor} from "@offchainlabs/upgrade-executor/src/IUpgradeExecu
 
 /**
  * @title ExecuteNitroContracts1Point2Point3UpgradeScript
- * @notice This script executes nitro contracts 2.1.3 upgrade through UpgradeExecutor
+ * @notice This script executes nitro contracts 2.1.3 upgrade or migration through UpgradeExecutor
  */
 contract ExecuteNitroContracts2Point1Point3UpgradeScript is Script {
     function run() public {
-        bool eigenDACaller = vm.envBool("EIGENDA_CALLER");
+        bool eigenDACaller = vm.envBool("IS_EIGENDA_V2_1_0_CALLER");
 
         if (eigenDACaller) {
             console.log("Executing nitro-contracts v2.1.3 x eigenda upgrade from v2.1.0 eigenda chain");

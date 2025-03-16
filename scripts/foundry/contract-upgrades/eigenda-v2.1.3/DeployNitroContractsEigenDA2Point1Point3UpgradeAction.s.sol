@@ -13,8 +13,8 @@ import {MockArbSys} from "../../helper/MockArbSys.sol";
  * @notice This script deploys the ERC20Bridge contract and NitroContractsEigenDA2Point1Point3UpgradeAction contract.
  */
 contract DeployNitroContractsEigenDA2Point1Point3UpgradeActionScript is DeploymentHelpersScript {
-    // ArbOS x EigenDA v32 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32
-    bytes32 public constant WASM_MODULE_ROOT = 0x951009942c00b5bd0abec233174fe33fadf7cd5013d17b042f9b28b3b00b469c;
+    // ArbOS x EigenDA v32 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32.1
+    bytes32 public constant WASM_MODULE_ROOT = 0x04a297cdd13254c4c6c26388915d416286daf22f3a20e3ebee10400a3129dd17;
     // ArbOS v32 https://github.com/OffchainLabs/nitro/releases/tag/consensus-v32
     bytes32 public constant COND_WASM_MODULE_ROOT = 0x184884e1eb9fefdc158f6c8ac912bb183bf3cf83f0090317e0bc4ac5860baa39;
 

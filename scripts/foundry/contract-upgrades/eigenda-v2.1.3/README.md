@@ -1,56 +1,50 @@
 # Nitro contracts 2.1.3 upgrade
 
 > [!CAUTION]
-> This is a patch version and is necessary for all EigenDA x Arbitrum chains as it includes many critical bug fixes.
+> This is a patch version and is necessary for all EigenDA x Arbitrum chains as it includes many critical bug fixes including EIP-7702 vulnerability patches.
 >
 
-These scripts deploy and execute the `NitroContractsEigenDA2Point1Point3UpgradeAction` contract which allows vanilla and EigenDA Orbit chains to upgrade to [2.1.3 release](https://github.com/layr-labs/nitro-contracts/releases/tag/v2.1.3). Predeployed instances of the upgrade action exist on the chains listed in the following section.
+These scripts deploy and execute the `NitroContractsEigenDA2Point1Point3UpgradeAction` contract which allows existing Arbitrum Orbit chains as well EigenDA Orbit chains to upgrade to [v2.1.3 release](https://github.com/layr-labs/nitro-contracts/releases/tag/v2.1.3). Pre-deployed instances of the upgrade action exist on the chains listed in the following section.
 
 Upgrading to `eigenda-v2.1.3` is required to ensure post-pectra compatibility.
 
-You may need to perform the `v2.1.2` upgrade first if your chain uses a custom gas token and was originally deployed before `v2.0.0`. Please refer to the top [README](/README.md#check-version-and-upgrade-path) `Check Version and Upgrade Path` on how to determine your current nitro contracts version.
+`NitroContractsEigenDA2Point1Point3UpgradeAction` will perform the following actions based on whose calling it:
 
-`NitroContractsEigenDA2Point1Point3UpgradeAction` will perform the following action:
+**Vanilla Arbitrum Chain using [v2.1.3](https://github.com/OffchainLabs/nitro-contracts/releases/tag/v2.1.3)**
+1. Upgrade the `Inbox` or `ERC20Inbox` contract to `eigenda-v2.1.3`
+2. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
+3. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3`
 
-1. Upgrade the `Inbox` or `ERC20Inbox` contract to `v2.1.3`
-1. Upgrade the `SequencerInbox` contract to `v2.1.3`
+**EigenDA Arbitrum Chain using [v2.1.0](https://github.com/Layr-Labs/nitro-contracts/releases/tag/v2.1.0)**
+1. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
+2. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3` 
+
 
 ## Requirements
-
-This upgrade only support upgrading from the following [nitro-contract release](https://github.com/OffchainLabs/nitro-contracts/releases):
-
-- Inbox: v1.1.0 - v2.1.0 inclusive
-- Outbox: v1.1.0 - v2.1.0 inclusive
-- SequencerInbox: v1.2.1 - v2.1.0 inclusive
-- Bridge: v1.1.0 - v2.1.0 inclusive (note this is not ERC20Bridge)
-- ERC20Bridge: v2.0.0 - v2.1.2 inclusive
-- RollupProxy: v1.1.0 - v2.1.0 inclusive
-- RollupAdminLogic: v2.0.0 - v2.1.0 inclusive
-- RollupUserLogic: v2.0.0 - v2.1.0 inclusive
-- ChallengeManager: v2.0.0 - v2.1.0 inclusive
+This upgrade assumes the caller contract set is either running `eigenda-v2.1.0` or vanilla arbitrum `v2.1.3` contracts. The use of other versions
+could result in unintended side effects and is untested.
 
 Please refer to the top [README](/README.md#check-version-and-upgrade-path) `Check Version and Upgrade Path` on how to determine your current nitro contracts version.
 
 ## Deployed instances
 
 ### Mainnets
-- L1 Mainnet: 0x9128ef6A57B2653CF78e650Dd97d0931dCaf79A2
-- L2 Arb1: 0xA350fE71079Aa86d48a8f2fDc600bbc6fa9CFE70
-- L2 Nova: 0x89611a8feff5a6376ea41265a05243FFBA225a59
-- L2 Base: 0x934a1e5187A5011AcECBACACF7cf6B22abE599A5
+- L1 Mainnet: 
+- L2 Arb1: 
+- L2 Base: 
 
 ### Testnets
-- L1 Sepolia: 0x82129aB330619388f46d3Cad387aEecb3843A16f
-- L1 Holesky: 0x29D1bA37B3A7CC49990e1F613fdF9B33f9Cb3cEE.
-- L2 ArbSepolia: 0x0E0Ee28333798F9aF0E76653beabC72F7477C287.
-- L2 BaseSepolia: 0x5F6e79237387b01208FDf3a93efd455a2CADBa32.
+- L1 Sepolia: 
+- L1 Holesky: 
+- L2 ArbSepolia: 
+- L2 BaseSepolia: 
 
 ## How to use it
 
 1. Setup .env according to the example files, make sure you have everything correctly defined. The .env file must be in project root for recent foundry versions.
 
 > [!CAUTION]
-> The .env file must be in project root.
+> The `.env` file must be in project root.
 
 2. (Skip this step if you can use the deployed instances of action contract)
    `DeployNitroContractsEigenDA2Point1Point3UpgradeActionScript.s.sol` script deploys templates, and upgrade action itself. It can be executed in this directory like this:
@@ -65,7 +59,7 @@ As a result, all templates and upgrade action are deployed. Note the last deploy
 3. `ExecuteNitroContracts2Point1Point3Upgrade.s.sol` script uses previously deployed upgrade action to execute the upgrade. It makes following assumptions - L1UpgradeExecutor is the rollup owner, and there is an EOA which has executor rights on the L1UpgradeExecutor. Proceed with upgrade using the owner account (the one with executor rights on L1UpgradeExecutor):
 
 ```bash
-forge script --sender $EXECUTOR --rpc-url $PARENT_CHAIN_RPC --broadcast ExecuteNitroContracts2Point1Point3UpgradeScript -vvv
+forge script --sender $EXECUTOR --rpc-url $PARENT_CHAIN_RPC --broadcast ExecuteNitroContractsEigenDA2Point1Point3UpgradeScript -vvv
 # use --account XXX / --private-key XXX / --interactive / --ledger to set the account to send the transaction from
 ```
 
