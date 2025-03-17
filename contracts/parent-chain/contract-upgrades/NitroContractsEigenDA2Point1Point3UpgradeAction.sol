@@ -182,7 +182,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
 
         // upgrade eigenda specific contracts
         // ie sequencer inbox, one step prover
-        _performEigenDA2Point1Point3Upgrade(rollupCore, proxyAdmin, sequencerInbox, caller, isERC20);
+        _performEigenDA2Point1Point3Upgrade(rollupCore, proxyAdmin, sequencerInbox, isERC20);
 
         // determine whether to also upgrade base v2.1.3 contracts.
         // this is unnecessary if being called by upgrade executor for vanilla
@@ -197,26 +197,31 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
      * @param rollup admin contract used for updating module root
      * @param proxyAdmin admin contract used for upgrading sequencer inbox & challenge manager
      * @param sequencerInbox sequencer inbox address
-     * @param src caller context of upgrade
      * @param isERC20 denotes whether custom gas token or native ETH for rollup asset
      */
     function _performEigenDA2Point1Point3Upgrade(
         IRollupCore rollup,
         ProxyAdmin proxyAdmin,
         address sequencerInbox,
-        UpgradeSource src,
         bool isERC20
     ) internal {
-        // (1) upgrade the sequencer inbox
+        // upgrade the sequencer inbox
         proxyAdmin.upgrade({
             proxy: TransparentUpgradeableProxy(payable((sequencerInbox))),
             implementation: isERC20 ? newERC20SequencerInboxImpl : newEthSequencerInboxImpl
         });
 
-        // (2) upgrade one step prover and set via new challenge manager field
-        _upgradeChallengerManager(rollup, proxyAdmin, src);
+        // upgrade one step prover and set via new challenge manager field
+        _upgradeChallengerManager(rollup, proxyAdmin);
     }
 
+    /**
+     *
+     * @dev Upgrades v2.1.3 subset contracts
+     * @param inbox delayed inbox address
+     * @param proxyAdmin admin used for upgrading challenge inbox implementation
+     * @param isERC20 denotes whether custom gas token bridge is used
+     */
     function _performBase2Point1Point3Upgrade(address inbox, ProxyAdmin proxyAdmin, bool isERC20) internal {
         // older upgrade action used to use the "rollup" address as the argument
         // for 2.1.3 we cannot discover the inbox from the rollup, so instead we have to supply the inbox address
@@ -234,17 +239,30 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         });
     }
 
-    function _upgradeChallengerManager(IRollupCore rollup, ProxyAdmin proxyAdmin, UpgradeSource src) internal {
+    /**
+     * @dev upgrades challenge manager contract to new use immutable one step prover entry contract
+     * @param rollup admin rollup contract used for setting new wasm module root
+     * @param proxyAdmin admin used for upgrading challenge manager implementation
+     */
+    function _upgradeChallengerManager(IRollupCore rollup, ProxyAdmin proxyAdmin) internal {
         // set the new challenge manager impl
         TransparentUpgradeableProxy challengeManager =
             TransparentUpgradeableProxy(payable(address(rollup.challengeManager())));
 
-        // set calldata based on source context
-        // there's no need to set a conditional one step prover.
+        // there's no need to set a conditional one step prover that's mapped to either:
+        //    - consensus-eigenda-v32 OR
+        //    - consensus-v32
         // mapping the eigenda v2.1.3 one step prover to the arbitrum v2.1.3 cond wasm root is
         // sufficient since the eigenda v2.1.3 osp is a superset of the arbitrum v2.1.3 osp logic
         // with extensions only made for read preimage proving for an EigenDA preimage type.
-        // by default the challenge
+        // also since eigenda uses the v.2.1.0 consensus-eigenda-v32 root which has a known vulnerability
+        // then it SHOULD NOT be used for backwards proving. to fully patch this in a forward compatible way,
+        // the core software would also need to be update to version filter between consensus-eigenda-v32 or
+        // consensus-eigenda-v32.1 roots to understand whether the EigenDA blobs' length should be intepreted
+        // as the # of bytes vs field elements. This is unnecessary since there's no production usage of the
+        // rollup YET. In a production world though, there will need to be deeper considerations around how
+        // to effectively patch a vulnerable prover VM while still ensuring sufficient cross compatibility
+        // between versions.
 
         bytes memory postUpgradeCalldata =
             abi.encodeCall(IChallengeManagerUpgradeInit.postUpgradeInit, (newOSP, condRoot, newOSP));
@@ -263,16 +281,12 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
             "NitroContractsEigenDA2Point1Point3UpgradeAction: new OSP not set"
         );
 
-        // only set new wasm module root to nitro-contracts x eigenda
-        //  v2.1.3 if upgrading from vanilla Arbitrum chain.
-        if (src == UpgradeSource.ArbitrumV2Point1Point3) {
-            IRollupAdmin(address(rollup)).setWasmModuleRoot(newWasmModuleRoot);
+        IRollupAdmin(address(rollup)).setWasmModuleRoot(newWasmModuleRoot);
 
-            // verify that module root was actually upgraded
-            require(
-                rollup.wasmModuleRoot() == newWasmModuleRoot,
-                "NitroContractsEigenDA2Point1Point3UpgradeAction: wasm module root not set"
-            );
-        }
+        // verify that module root was actually upgraded
+        require(
+            rollup.wasmModuleRoot() == newWasmModuleRoot,
+            "NitroContractsEigenDA2Point1Point3UpgradeAction: wasm module root not set"
+        );
     }
 }
