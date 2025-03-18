@@ -46,6 +46,7 @@ contract DeployNitroContractsEigenDA2Point1Point3UpgradeActionScript is Deployme
 
     function run() public {
         bool isArbitrum = vm.envBool("PARENT_CHAIN_IS_ARBITRUM");
+        uint256 maxDataSize = vm.envUint("MAX_DATA_SIZE");
         if (isArbitrum) {
             // etch a mock ArbSys contract so that foundry simulate it nicely
             bytes memory mockArbSysCode = address(new MockArbSys()).code;
@@ -62,27 +63,28 @@ contract DeployNitroContractsEigenDA2Point1Point3UpgradeActionScript is Deployme
             );
         }
 
-        // deploy new ETHInbox contract from v2.1.3
+        // // deploy new ETHInbox contract from v2.1.3
         address newEthInboxImpl = deployBytecodeWithConstructorFromJSON(
             "/node_modules/@eigenda/nitro-contracts-2.1.3/build/contracts/src/bridge/Inbox.sol/Inbox.json",
-            abi.encode(vm.envUint("MAX_DATA_SIZE"))
-        );
-        // deploy new ERC20Inbox contract from v2.1.3
-        address newERC20InboxImpl = deployBytecodeWithConstructorFromJSON(
-            "/node_modules/@eigenda/nitro-contracts-2.1.3/build/contracts/src/bridge/ERC20Inbox.sol/ERC20Inbox.json",
-            abi.encode(vm.envUint("MAX_DATA_SIZE"))
+            abi.encode(maxDataSize)
         );
 
-        // deploy new EthSequencerInbox contract from v2.1.3
+        // // deploy new ERC20Inbox contract from v2.1.3
+        address newERC20InboxImpl = deployBytecodeWithConstructorFromJSON(
+            "/node_modules/@eigenda/nitro-contracts-2.1.3/build/contracts/src/bridge/ERC20Inbox.sol/ERC20Inbox.json",
+            abi.encode(maxDataSize)
+        );
+
+        // // deploy new EthSequencerInbox contract from v2.1.3
         address newEthSeqInboxImpl = deployBytecodeWithConstructorFromJSON(
             "/node_modules/@eigenda/nitro-contracts-2.1.3/build/contracts/src/bridge/SequencerInbox.sol/SequencerInbox.json",
-            abi.encode(vm.envUint("MAX_DATA_SIZE"), reader4844Address, false)
+            abi.encode(maxDataSize, reader4844Address, false)
         );
 
         // deploy new Erc20SequencerInbox contract from v2.1.3
         address newErc20SeqInboxImpl = deployBytecodeWithConstructorFromJSON(
             "/node_modules/@eigenda/nitro-contracts-2.1.3/build/contracts/src/bridge/SequencerInbox.sol/SequencerInbox.json",
-            abi.encode(vm.envUint("MAX_DATA_SIZE"), reader4844Address, true)
+            abi.encode(maxDataSize, reader4844Address, true)
         );
 
         address newOsp = deployOSPEigenDAV2Point1Point3Impl();

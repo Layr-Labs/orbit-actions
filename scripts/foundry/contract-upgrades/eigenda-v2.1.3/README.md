@@ -8,14 +8,16 @@ These scripts deploy and execute the `NitroContractsEigenDA2Point1Point3UpgradeA
 
 Upgrading to `eigenda-v2.1.3` is required to ensure post-pectra compatibility.
 
-`NitroContractsEigenDA2Point1Point3UpgradeAction` will perform the following actions based on whose calling it:
+`NitroContractsEigenDA2Point1Point3UpgradeAction` will perform the following actions based on who is calling it:
 
 **Vanilla Arbitrum Chain using [v2.1.3](https://github.com/OffchainLabs/nitro-contracts/releases/tag/v2.1.3)**
+i.e (`IS_EIGENDA_V2_1_0_CALLER=false`)
 1. Upgrade the `Inbox` or `ERC20Inbox` contract to `eigenda-v2.1.3`
 2. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
 3. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3`
 
 **EigenDA Arbitrum Chain using [v2.1.0](https://github.com/Layr-Labs/nitro-contracts/releases/tag/v2.1.0)**
+i.e (`IS_EIGENDA_V2_1_0_CALLER=true`)
 1. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
 2. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3` 
 
@@ -45,6 +47,16 @@ Please refer to the top [README](/README.md#check-version-and-upgrade-path) `Che
 
 > [!CAUTION]
 > The `.env` file must be in project root.
+
+If migrating from an existing Arbirum orbit chain using nitro-contracts v2.1.3, set:
+```
+IS_EIGENDA_V2_1_0_CALLER=false
+```
+
+if migrating from an existing Arbitrum x EigenDA chain using nitro-contracts v2.1.0, set:
+```
+IS_EIGENDA_V2_1_0_CALLER=true
+```
 
 2. (Skip this step if you can use the deployed instances of action contract)
    `DeployNitroContractsEigenDA2Point1Point3UpgradeActionScript.s.sol` script deploys templates, and upgrade action itself. It can be executed in this directory like this:

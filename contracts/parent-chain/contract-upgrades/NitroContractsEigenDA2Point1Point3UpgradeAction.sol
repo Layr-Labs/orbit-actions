@@ -3,14 +3,15 @@ pragma solidity 0.8.16;
 
 import "@eigenda/nitro-contracts-2.1.3/src/osp/IOneStepProofEntry.sol";
 import "@eigenda/nitro-contracts-2.1.3/src/rollup/IRollupAdmin.sol";
+import "@eigenda/nitro-contracts-2.1.3/src/bridge/ISequencerInbox.sol";
 
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 // UpgradeSource denotes the caller context of the upgrade
-// and is used to conditionally construct a conditonal one step prover
-// used for temporary backwards compatibility
+// and is used to conditionally upgrade implementations for reduced
+// gas costs.
 enum UpgradeSource {
     EigenDAV2Point1Zero,
     ArbitrumV2Point1Point3
@@ -60,7 +61,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
      * @dev this approach assumes that only one osp will be used across a span of machine wavm references; ie:
      *       - (consensus-32-eigenda) nitro-contracts x eigenda v2.1.0
      *       - (consensus-32.1-eigenda) nitro-contracts x eigenda v2.1.3
-     *       - (consensus-32) nitro-contracts x arbitrum v2.1.3
+     *       - (consensus-32) nitro-contracts x arbitrum (v2.1.0 -- v2.1.3)
      *
      *
      *      this shouldn't cause any complications as consensus-32.1-eigenda is a superset of consensus-32 and
@@ -205,11 +206,19 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         address sequencerInbox,
         bool isERC20
     ) internal {
+        // determine if eigenDARollupManager contract has been set
+        address eigenDARollupManager = IEigenV2Point1SeqInbox(sequencerInbox).eigenDARollupManager();
+
         // upgrade the sequencer inbox
         proxyAdmin.upgrade({
             proxy: TransparentUpgradeableProxy(payable((sequencerInbox))),
             implementation: isERC20 ? newERC20SequencerInboxImpl : newEthSequencerInboxImpl
         });
+
+        // override storage slot to ensure cert verification is initially disabled
+        if (eigenDARollupManager != address(0)) {
+            ISequencerInbox(sequencerInbox).setEigenDACertVerifier(address(0));
+        }
 
         // upgrade one step prover and set via new challenge manager field
         _upgradeChallengerManager(rollup, proxyAdmin);
