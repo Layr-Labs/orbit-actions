@@ -38,6 +38,9 @@ import {
     SequencerInbox as SequencerInbox_2_1_3,
     ISequencerInbox as ISequencerInbox_2_1_3
 } from "@arbitrum/nitro-contracts-2.1.3/src/bridge/SequencerInbox.sol";
+
+import {ISequencerInbox as ISequencerInbox_2_1_3_EigenDA} from
+    "@eigenda/nitro-contracts-2.1.3/src/bridge/SequencerInbox.sol";
 import {
     SequencerInbox as SequencerInbox_2_1_0_EigenDA,
     ISequencerInbox as ISequencerInbox_2_1_0_EigenDA
@@ -87,6 +90,12 @@ contract FakeArbitrumEigenDA2Point1Point0Rollup {
     function setWasmModuleRoot(bytes32 newWasmModuleRoot) external {
         wasmModuleRoot = newWasmModuleRoot;
     }
+
+    // very janky testing schema by hardcoding address vs using tx
+    // context for stubbing (e.g, tx.origin || msg.sender)
+    function owner() public pure returns (address) {
+        return 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
+    }
 }
 
 contract FakeArbitrum2Point1Point3Rollup {
@@ -101,6 +110,10 @@ contract FakeArbitrum2Point1Point3Rollup {
     function setWasmModuleRoot(bytes32 newWasmModuleRoot) external {
         wasmModuleRoot = newWasmModuleRoot;
     }
+
+    function owner() public pure returns (address) {
+        return 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
+    }
 }
 
 contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, DeploymentHelpersScript {
@@ -110,8 +123,6 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
     // ArbOS x EigenDA v32 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32
     bytes32 public constant WASM_MODULE_ROOT_EIGENDA_V32 =
         0x951009942c00b5bd0abec233174fe33fadf7cd5013d17b042f9b28b3b00b469c;
-    // ArbOS v32 https://github.com/OffchainLabs/nitro/releases/tag/consensus-v32
-    bytes32 public constant COND_WASM_MODULE_ROOT = 0x184884e1eb9fefdc158f6c8ac912bb183bf3cf83f0090317e0bc4ac5860baa39;
 
     uint256 maxDataSize = 100_000; // dummy value
 
@@ -123,6 +134,8 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
 
     address fakeRollup;
     address fakeReader = address(0xFF01);
+    address fakeEigenDARollupManager = address(0xDEADBEEF);
+    address fakeEigenDACertVerifier = address(0x69696969);
 
     address erc20Bridge_2_1_3;
     address bridge_2_1_3;
@@ -212,12 +225,30 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
         challengeManager_2_1_3 =
             address(new TransparentUpgradeableProxy(address(new ChallengerManager_2_1_3()), address(proxyAdmin), ""));
 
-        fakeRollup_2_1_3 =
-            new FakeArbitrum2Point1Point3Rollup(IChallengeManager_2_1_3(challengeManager_2_1_3), COND_WASM_MODULE_ROOT);
+        fakeRollup_2_1_3 = new FakeArbitrum2Point1Point3Rollup(
+            IChallengeManager_2_1_3(challengeManager_2_1_3), WASM_MODULE_ROOT_EIGENDA_V32Point1
+        );
 
         // initialize everything
-        Bridge_2_1_3(bridge_2_1_3).initialize(IOwnable_2_1_3(address(fakeRollup)));
-        ERC20Bridge_2_1_3(erc20Bridge_2_1_3).initialize(IOwnable_2_1_3(address(fakeRollup)), fakeToken);
+        Bridge_2_1_3(bridge_2_1_3).initialize(
+            IOwnable_2_1_3(
+                address(
+                    new FakeArbitrumEigenDA2Point1Point0Rollup(
+                        IChallengeManager_2_1_0_EigenDA(challengeManager_2_1_0_EIGENDA), WASM_MODULE_ROOT_EIGENDA_V32
+                    )
+                )
+            )
+        );
+        ERC20Bridge_2_1_3(erc20Bridge_2_1_3).initialize(
+            IOwnable_2_1_3(
+                address(
+                    new FakeArbitrumEigenDA2Point1Point0Rollup(
+                        IChallengeManager_2_1_0_EigenDA(challengeManager_2_1_0_EIGENDA), WASM_MODULE_ROOT_EIGENDA_V32
+                    )
+                )
+            ),
+            fakeToken
+        );
         SequencerInbox_2_1_3(sequencerInbox_2_1_3).initialize(
             Bridge_2_1_3(bridge_2_1_3), ISequencerInbox_2_1_3.MaxTimeVariation(10, 10, 10, 10)
         );
@@ -276,17 +307,14 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
         );
 
         // initialize everything
-        Bridge_2_1_0_EigenDA(bridge_2_1_0_EIGENDA).initialize(IOwnable_2_1_0_EigenDA(address(fakeRollup)));
+        Bridge_2_1_0_EigenDA(bridge_2_1_0_EIGENDA).initialize(IOwnable_2_1_0_EigenDA(address(fakeRollup_2_1_0_EIGENDA)));
         ERC20Bridge_2_1_0_EigenDA(erc20Bridge_2_1_0_EIGENDA).initialize(
-            IOwnable_2_1_0_EigenDA(address(fakeRollup)), fakeToken
+            IOwnable_2_1_0_EigenDA(address(fakeRollup_2_1_0_EIGENDA)), fakeToken
         );
         SequencerInbox_2_1_0_EigenDA(sequencerInbox_2_1_0_EIGENDA).initialize(
             Bridge_2_1_0_EigenDA(bridge_2_1_0_EIGENDA), ISequencerInbox_2_1_0_EigenDA.MaxTimeVariation(10, 10, 10, 10)
         );
-        SequencerInbox_2_1_0_EigenDA(erc20SequencerInbox_2_1_0_EIGENDA).initialize(
-            Bridge_2_1_0_EigenDA(erc20Bridge_2_1_0_EIGENDA),
-            ISequencerInbox_2_1_0_EigenDA.MaxTimeVariation(10, 10, 10, 10)
-        );
+
         Inbox_2_1_0_EigenDA(inbox_2_1_0_EIGENDA).initialize(
             Bridge_2_1_0_EigenDA(bridge_2_1_0_EIGENDA), SequencerInbox_2_1_0_EigenDA(sequencerInbox_2_1_0_EIGENDA)
         );
@@ -361,9 +389,9 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
             newEthSeqInboxImpl,
             newErc20SeqInboxImpl,
             newChallengeManager,
+            fakeEigenDACertVerifier,
             IOneStepProofEntry(newOneStepProver),
-            WASM_MODULE_ROOT_EIGENDA_V32Point1,
-            COND_WASM_MODULE_ROOT
+            WASM_MODULE_ROOT_EIGENDA_V32Point1
         );
     }
 
@@ -392,6 +420,10 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
         );
 
         assertEq(address(IChallengeManager_2_1_3(challengeManager_2_1_3).getOsp(bytes32(0x0))), newOneStepProver);
+
+        address certVerifier = address(ISequencerInbox_2_1_3_EigenDA(sequencerInbox_2_1_3).eigenDACertVerifier());
+
+        assertEq(certVerifier, fakeEigenDACertVerifier);
     }
 
     function testArb2_1_3toEigenDA2_1_3_ERC20Bridge() public {
@@ -485,7 +517,9 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
 
     function testRevertWhenEigenDA_2_1_0_CallingWithArb_2_1_3_Source() public {
         NitroContractsEigenDA2Point1Point3UpgradeAction action = _deployActionScript();
-        vm.expectRevert("NitroContractsEigenDA2Point1Point3UpgradeAction: INCORRECT_CALLER_SOURCE");
+        vm.expectRevert(
+            "NitroContractsEigenDA2Point1Point3UpgradeAction: expected arbitrum nitro-contracts v2.1.3 caller, got eigenda instead"
+        );
         upgradeExecutor.execute(
             address(action),
             abi.encodeCall(
@@ -502,7 +536,9 @@ contract NitroContractsEigenDA2Point1Point3UpgradeActionTest is Test, Deployment
 
     function testRevertWhenArbitrum_2_1_3_CallingWithEigenDA_2_1_0_Source() public {
         NitroContractsEigenDA2Point1Point3UpgradeAction action = _deployActionScript();
-        vm.expectRevert("NitroContractsEigenDA2Point1Point3UpgradeAction: INCORRECT_CALLER_SOURCE_EIGENDA");
+        vm.expectRevert(
+            "NitroContractsEigenDA2Point1Point3UpgradeAction: expected nitro-contracts x eigenda v2.1.0 caller"
+        );
         upgradeExecutor.execute(
             address(action),
             abi.encodeCall(

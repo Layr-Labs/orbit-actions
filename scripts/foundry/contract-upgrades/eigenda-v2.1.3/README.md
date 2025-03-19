@@ -12,15 +12,16 @@ Upgrading to `eigenda-v2.1.3` is required to ensure post-pectra compatibility.
 
 **Vanilla Arbitrum Chain using [v2.1.3](https://github.com/OffchainLabs/nitro-contracts/releases/tag/v2.1.3)**
 i.e (`IS_EIGENDA_V2_1_0_CALLER=false`)
-1. Upgrade the `Inbox` or `ERC20Inbox` contract to `eigenda-v2.1.3`
-2. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
-3. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3`
+1. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
+2. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3`
+3. Set a new `EigenDACertVerifier` contract into the `SequencerInbox` overriding the existing and now deprecated `EigenDARollupManager` contract
 
 **EigenDA Arbitrum Chain using [v2.1.0](https://github.com/Layr-Labs/nitro-contracts/releases/tag/v2.1.0)**
 i.e (`IS_EIGENDA_V2_1_0_CALLER=true`)
-1. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
-2. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3` 
-
+1. Upgrade the `Inbox` or `ERC20Inbox` contract to `eigenda-v2.1.3`
+2. Upgrade the `SequencerInbox` contract to `eigenda-v2.1.3`
+3. Upgrade the `ChallengerManager` contract to `eigenda-v2.1.3` 
+4. Set a new `EigenDACertVerifier` contract into the `SequencerInbox` overriding the existing and now deprecated `EigenDARollupManager` contract
 
 ## Requirements
 This upgrade assumes the caller contract set is either running `eigenda-v2.1.0` or vanilla arbitrum `v2.1.3` contracts. The use of other versions

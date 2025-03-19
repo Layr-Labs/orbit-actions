@@ -48,28 +48,17 @@ interface IChallengeManagerUpgradeInit {
  */
 contract NitroContractsEigenDA2Point1Point3UpgradeAction {
     /**
-     * @dev condOsp is used to ensure backwards compatibility for temporarily resolving
-     *      one step proofs for assertion nodes using pre-upgrade version. It's expected
-     *      that this will only be callable until last pre-upgrade claim node has
-     *      been confirmed on the assertion chain.
-     *
-     *
-     *      since nitro-contracts x eigenda v2.1.0 references a vulnerable OSP artifact.
-     *      Using it for previous OSP resolution is insufficient and it's wavm root (consensus-eigenda-v32)
-     *      should map to the latest v2.1.3 one step prover.
      *
      * @dev this approach assumes that only one osp will be used across a span of machine wavm references; ie:
-     *       - (consensus-32-eigenda) nitro-contracts x eigenda v2.1.0
-     *       - (consensus-32.1-eigenda) nitro-contracts x eigenda v2.1.3
-     *       - (consensus-32) nitro-contracts x arbitrum (v2.1.0 -- v2.1.3)
+     *       - (consensus-v32-eigenda) nitro-contracts x eigenda v2.1.0
+     *       - (consensus-v32.1-eigenda) nitro-contracts x eigenda v2.1.3
+     *       - (consensus-v32) nitro-contracts x arbitrum (v2.1.0 -- v2.1.3 (inclusive))
      *
      *
-     *      this shouldn't cause any complications as consensus-32.1-eigenda is a superset of consensus-32 and
-     *      can support one step proof resolution for all vanilla arbitrum opcodes.
+     *      this shouldn't cause any complications as consensus-v32.1-eigenda is a superset of consensus-v32 and
+     *      can support one step proof resolution for all vanilla arbitrum opcodes. therefore setting a conditional one
+     *      step prover for backwards compatibility is unnecessary for this action!
      */
-
-    // based on caller context
-    bytes32 public immutable condRoot;
 
     // core arbitrum v2.1.3 upgrade action contracts
     address public immutable newEthInboxImpl;
@@ -84,15 +73,18 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
     bytes32 public immutable newWasmModuleRoot;
     IOneStepProofEntry public immutable newOSP;
 
+    // eigenda verification utils
+    address public immutable eigenDACertVerifier;
+
     constructor(
         address _newEthInboxImpl,
         address _newERC20InboxImpl,
         address _newEthSequencerInboxImpl,
         address _newERC20SequencerInboxImpl,
         address _newChallengeManagerImpl,
+        address _eigenDACertVerifier, // new verification contract introduced per eigenda x nitro-contracts v2.1.3
         IOneStepProofEntry _osp,
-        bytes32 _newWasmModuleRoot,
-        bytes32 _condRoot
+        bytes32 _newWasmModuleRoot
     ) {
         require(
             Address.isContract(_newEthInboxImpl),
@@ -125,8 +117,8 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         // set eigenda x v2.1.3 contracts
         newOSP = _osp;
         newWasmModuleRoot = _newWasmModuleRoot;
-        condRoot = _condRoot;
         newChallengeManagerImpl = _newChallengeManagerImpl;
+        eigenDACertVerifier = _eigenDACertVerifier;
     }
 
     /**
@@ -134,22 +126,29 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
      *      lives on sequencer inbox. verify inverse for base arbitrum chain case.
      * @param caller source context
      * @param sequencerInbox address of sequencer inbox contract
+     * @param rollup core contract used to verify wasm root invariance
      */
     function _verifySourceContext(UpgradeSource caller, address sequencerInbox, IRollupCore rollup) internal view {
         if (caller == UpgradeSource.EigenDAV2Point1Zero) {
             try IEigenV2Point1SeqInbox(sequencerInbox).eigenDARollupManager() returns (address) {}
             catch {
-                revert("NitroContractsEigenDA2Point1Point3UpgradeAction: INCORRECT_CALLER_SOURCE_EIGENDA");
+                revert(
+                    "NitroContractsEigenDA2Point1Point3UpgradeAction: expected nitro-contracts x eigenda v2.1.0 caller"
+                );
             }
 
-            require(rollup.wasmModuleRoot() != newWasmModuleRoot, "EXPECTED_WASM_ROOT_EIGENDA_CONSENSUS_V32");
+            require(
+                rollup.wasmModuleRoot() != newWasmModuleRoot,
+                "NitroContractsEigenDA2Point1Point3UpgradeAction: old wasm root can't match new one"
+            );
         } else {
             try IEigenV2Point1SeqInbox(sequencerInbox).eigenDARollupManager() returns (address) {}
             catch {
-                require(rollup.wasmModuleRoot() == condRoot, "EXPECTED_WASM_ROOT_ARBITRUM_CONSENSUS_V32");
                 return;
             }
-            revert("NitroContractsEigenDA2Point1Point3UpgradeAction: INCORRECT_CALLER_SOURCE");
+            revert(
+                "NitroContractsEigenDA2Point1Point3UpgradeAction: expected arbitrum nitro-contracts v2.1.3 caller, got eigenda instead"
+            );
         }
     }
 
@@ -158,6 +157,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
      * & base v2.1.3 upgrade action is the Sequencer Inbox contract.
      * Therefore it is deployed using the 2.1.3 action logic
      * @param rollup admin contract used for updating module root
+     * @param inbox delayed inbox proxy
      * @param proxyAdmin admin contract used for updating implementation references
      * @param caller the upgrading chain source type
      */
@@ -168,7 +168,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         _verifySourceContext(caller, sequencerInbox, rollupCore);
 
         address bridge = IInbox(inbox).bridge();
-        bool isERC20 = false;
+        bool isERC20;
 
         // // if the bridge is an ERC20Bridge below v2.x.x, revert
         try IERC20Bridge(bridge).nativeToken() returns (address) {
@@ -206,19 +206,14 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         address sequencerInbox,
         bool isERC20
     ) internal {
-        // determine if eigenDARollupManager contract has been set
-        address eigenDARollupManager = IEigenV2Point1SeqInbox(sequencerInbox).eigenDARollupManager();
-
         // upgrade the sequencer inbox
         proxyAdmin.upgrade({
             proxy: TransparentUpgradeableProxy(payable((sequencerInbox))),
             implementation: isERC20 ? newERC20SequencerInboxImpl : newEthSequencerInboxImpl
         });
 
-        // override storage slot to ensure cert verification is initially disabled
-        if (eigenDARollupManager != address(0)) {
-            ISequencerInbox(sequencerInbox).setEigenDACertVerifier(address(0));
-        }
+        // override eigenDAManager storage slot to include eigenDACertVerifier address instead
+        ISequencerInbox(sequencerInbox).setEigenDACertVerifier(eigenDACertVerifier);
 
         // upgrade one step prover and set via new challenge manager field
         _upgradeChallengerManager(rollup, proxyAdmin);
@@ -227,7 +222,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
     /**
      *
      * @dev Upgrades v2.1.3 subset contracts
-     * @param inbox delayed inbox address
+     * @param inbox delayed inbox proxy address
      * @param proxyAdmin admin used for upgrading challenge inbox implementation
      * @param isERC20 denotes whether custom gas token bridge is used
      */
@@ -257,7 +252,6 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         // set the new challenge manager impl
         TransparentUpgradeableProxy challengeManager =
             TransparentUpgradeableProxy(payable(address(rollup.challengeManager())));
-
         // there's no need to set a conditional one step prover that's mapped to either:
         //    - consensus-eigenda-v32 OR
         //    - consensus-v32
@@ -274,7 +268,7 @@ contract NitroContractsEigenDA2Point1Point3UpgradeAction {
         // between versions.
 
         bytes memory postUpgradeCalldata =
-            abi.encodeCall(IChallengeManagerUpgradeInit.postUpgradeInit, (newOSP, condRoot, newOSP));
+            abi.encodeCall(IChallengeManagerUpgradeInit.postUpgradeInit, (newOSP, rollup.wasmModuleRoot(), newOSP));
 
         // upgrade challenge manager & delegate call to new implementation method (if applicable)
         proxyAdmin.upgradeAndCall(challengeManager, newChallengeManagerImpl, postUpgradeCalldata);
