@@ -32,15 +32,15 @@ Please refer to the top [README](/README.md#check-version-and-upgrade-path) `Che
 ## Deployed instances
 
 ### Mainnets
-- L1 Mainnet: 
-- L2 Arb1: 
-- L2 Base: 
+- L1 Mainnet: N/A
+- L2 Arb1: N/A
+- L2 Base: N/A
 
 ### Testnets
-- L1 Sepolia: 
-- L1 Holesky: 
-- L2 ArbSepolia: 
-- L2 BaseSepolia: 
+- L1 Sepolia: N/A
+- L1 Holesky: [0x31C2C3dd9C47049a975DFaE804C886333CDCF9BB](https://holesky.etherscan.io/address/0x31c2c3dd9c47049a975dfae804c886333cdcf9bb)
+- L2 ArbSepolia: [0xc5d5c28F94c95D851a42Ff97f1886f8af505BD04](https://sepolia.arbiscan.io/address/0xc5d5c28F94c95D851a42Ff97f1886f8af505BD04)
+- L2 BaseSepolia: [0xbda5cff32ce4b2a1e312439e21d1b163d48b0936](https://sepolia.basescan.org/address/0xbda5cff32ce4b2a1e312439e21d1b163d48b0936)
 
 ## How to use it
 
