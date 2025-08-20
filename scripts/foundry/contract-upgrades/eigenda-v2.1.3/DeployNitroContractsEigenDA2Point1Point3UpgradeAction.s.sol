@@ -15,8 +15,8 @@ import "forge-std/Script.sol";
  * @notice This script deploys the bridge, challenger manager, and NitroContractsEigenDA2Point1Point3UpgradeAction contract.
  */
 contract DeployNitroContractsEigenDA2Point1Point3UpgradeActionScript is DeploymentHelpersScript {
-    // ArbOS x EigenDA v32.1 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32.1
-    bytes32 public constant WASM_MODULE_ROOT = 0x04a297cdd13254c4c6c26388915d416286daf22f3a20e3ebee10400a3129dd17;
+    // ArbOS x EigenDA v32.3 https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32.3
+    bytes32 public constant WASM_MODULE_ROOT = 0x39a7b951167ada11dc7c81f1707fb06e6710ca8b915b2f49e03c130bf7cd53b1;
 
     function deployOSPEigenDAV2Point1Point3Impl() internal returns (address) {
         // deploy new osp for eigenda x arbitrum v2.1.3
