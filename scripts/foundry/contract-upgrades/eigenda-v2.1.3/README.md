@@ -36,11 +36,28 @@ Please refer to the top [README](/README.md#check-version-and-upgrade-path) `Che
 - L2 Arb1: N/A
 - L2 Base: N/A
 
-### Testnets
+### Testnets ([consensus-v32.1](https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32.1))
+**NOT RECOMMENDED FOR USE - PLEASE USE consensus-v32.3**
 - L1 Sepolia: N/A
 - L1 Holesky: [0x31C2C3dd9C47049a975DFaE804C886333CDCF9BB](https://holesky.etherscan.io/address/0x31c2c3dd9c47049a975dfae804c886333cdcf9bb)
 - L2 ArbSepolia: [0xc5d5c28F94c95D851a42Ff97f1886f8af505BD04](https://sepolia.arbiscan.io/address/0xc5d5c28F94c95D851a42Ff97f1886f8af505BD04)
 - L2 BaseSepolia: [0xbda5cff32ce4b2a1e312439e21d1b163d48b0936](https://sepolia.basescan.org/address/0xbda5cff32ce4b2a1e312439e21d1b163d48b0936)
+
+### Testnets ([consensus-v32.3](https://github.com/Layr-Labs/nitro/releases/tag/consensus-eigenda-v32.3))
+- **L1 Sepolia**: [0x8b4b9BA6715aB493073d9e8426f3E9eb8404f12a](https://sepolia.etherscan.io/address/0x8b4b9BA6715aB493073d9e8426f3E9eb8404f12a)  
+  - ParentChainIsArbitrum: `false`  
+  - MaxDataSize: `117964`
+  - EigenDACertVerification: `true`
+
+- **L2 ArbSepolia**: [0xf099152D84dd3473442Ee659276b6d374c008c5a](https://sepolia.arbiscan.io/address/0xf099152D84dd3473442Ee659276b6d374c008c5a)  
+  - ParentChainIsArbitrum: `true`  
+  - MaxDataSize: `104857`
+  - EigenDACertVerification: `false`
+
+- **L2 BaseSepolia**: [0x28303a297e31ac5376047b128867e9D339B58Bf0](https://sepolia.basescan.org/address/0x28303a297e31ac5376047b128867e9D339B58Bf0#code)  
+  - ParentChainIsArbitrum: `false`  
+  - MaxDataSize: `104857`
+  - EigenDACertVerification: `true`
 
 ## How to use it
 
