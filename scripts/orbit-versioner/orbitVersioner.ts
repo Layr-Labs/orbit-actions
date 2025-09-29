@@ -149,6 +149,10 @@ function _checkForPossibleUpgrades(
     //   actionName: 'BOLD UpgradeAction',
     // },
     {
+      version: 'eigenda-v2.1.3',
+      actionName: 'NitroContractsEigenDA2Point1Point3UpgradeAction',
+    },
+    {
       version: 'v2.1.3',
       actionName: 'NitroContracts2Point1Point3UpgradeAction',
     },
@@ -244,7 +248,26 @@ function _canBeUpgradedToTargetVersion(
   //     supportedSourceVersionsPerContract.Bridge = []
   //   }
   // } else
-  if (targetVersion === 'v2.1.3') {
+  if (targetVersion === 'eigenda-v2.1.3') {
+    // eigenda-v2.1.3 will upgrade the SequencerInbox and Inbox contracts to use EigenDA 
+    supportedSourceVersionsPerContract = {
+      Inbox: [
+        'v2.1.3',
+      ],
+      Outbox: ['any'],
+      Bridge: [
+                'v2.1.3',
+      ],
+      RollupEventInbox: ['any'],
+      RollupProxy: ['any'],
+      RollupAdminLogic: ['v2.1.3'],
+      RollupUserLogic: [ 'v2.1.3'],
+      ChallengeManager: ['v2.1.3',],
+      SequencerInbox: [
+        'v2.1.3',
+      ],
+    }
+  } else if (targetVersion === 'v2.1.3') {
     // v2.1.3 will upgrade the SequencerInbox and Inbox contracts to prevent 7702 accounts from calling certain functions
     // v2.1.3 or v3.0.0 must be performed before the parent chain upgrades with 7702
     // has the same prerequisites as v3.0.0
