@@ -249,23 +249,17 @@ function _canBeUpgradedToTargetVersion(
   //   }
   // } else
   if (targetVersion === 'eigenda-v2.1.3') {
-    // eigenda-v2.1.3 will upgrade the SequencerInbox and Inbox contracts to use EigenDA 
+    // eigenda-v2.1.3 will upgrade the SequencerInbox and Inbox contracts to use EigenDA
     supportedSourceVersionsPerContract = {
-      Inbox: [
-        'v2.1.3',
-      ],
+      Inbox: ['v2.1.3'],
       Outbox: ['any'],
-      Bridge: [
-                'v2.1.3',
-      ],
+      Bridge: ['v2.1.3'],
       RollupEventInbox: ['any'],
       RollupProxy: ['any'],
       RollupAdminLogic: ['v2.1.3'],
-      RollupUserLogic: [ 'v2.1.3'],
-      ChallengeManager: ['v2.1.3',],
-      SequencerInbox: [
-        'v2.1.3',
-      ],
+      RollupUserLogic: ['v2.1.3'],
+      ChallengeManager: ['v2.1.3'],
+      SequencerInbox: ['v2.1.3'],
     }
   } else if (targetVersion === 'v2.1.3') {
     // v2.1.3 will upgrade the SequencerInbox and Inbox contracts to prevent 7702 accounts from calling certain functions
