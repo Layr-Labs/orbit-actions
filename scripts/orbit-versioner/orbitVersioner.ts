@@ -149,7 +149,7 @@ function _checkForPossibleUpgrades(
     //   actionName: 'BOLD UpgradeAction',
     // },
     {
-      version: 'eigenda-v2.1.3',
+      version: 'v2.1.3-eigenda',
       actionName: 'NitroContractsEigenDA2Point1Point3UpgradeAction',
     },
     {
@@ -248,7 +248,7 @@ function _canBeUpgradedToTargetVersion(
   //     supportedSourceVersionsPerContract.Bridge = []
   //   }
   // } else
-  if (targetVersion === 'eigenda-v2.1.3') {
+  if (targetVersion === 'v2.1.3-eigenda') {
     // eigenda-v2.1.3 will upgrade the SequencerInbox and Inbox contracts to use EigenDA
     supportedSourceVersionsPerContract = {
       Inbox: ['v2.1.3'],
